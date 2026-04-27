@@ -921,18 +921,19 @@ footer {
   position: fixed; inset: 0; pointer-events: none; z-index: 1100;
 }
 
-/* ─── Formspree submit button states ─── */
-[data-fs-submit-btn]:disabled {
+/* ─── Submit button disabled state ─── */
+#submit-btn:disabled {
   opacity: 0.55; cursor: not-allowed; transform: none !important;
   box-shadow: none !important;
 }
-[data-fs-submit-btn]:disabled::after {
-  content: ''; display: inline-block; width: 14px; height: 14px;
-  border: 2px solid rgba(20,20,20,0.4); border-top-color: var(--dark);
-  border-radius: 50%; animation: spin 0.7s linear infinite; margin-left: 8px;
-  vertical-align: middle;
+/* Field-level validation errors */
+.field-error {
+  display: block; font-size: 11px; color: #e74c3c;
+  margin-top: 5px; min-height: 16px;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+input.invalid, select.invalid, textarea.invalid {
+  border-color: rgba(231,76,60,0.6) !important;
+}
 @media (max-width: 1000px) {
   .guide-inner, .stakes-inner { grid-template-columns: 1fr; gap: 48px; }
   .guide-visual, .stakes-right { order: -1; }
@@ -1358,65 +1359,62 @@ footer {
       <p class="section-sub">Tell us a little about where you are and what's not working. We'll follow up within one business day with honest thoughts — no obligation.</p>
     </div>
 
-    <div class="contact-form reveal reveal-delay-1">
+    <div class="contact-form reveal reveal-delay-1" id="contact-form-wrapper">
 
-      <!-- Success message (hidden until form submits) -->
-      <div data-fs-success style="display:none">
-        <div style="text-align:center;padding:40px 20px">
-          <div style="font-size:48px;margin-bottom:16px">🎉</div>
-          <div style="font-family:'Raleway',sans-serif;font-weight:900;font-size:24px;color:var(--text);margin-bottom:12px">We look forward to talking with you soon!</div>
-          <p style="font-size:15px;color:var(--text-muted);line-height:1.7;max-width:420px;margin:0 auto 24px">Your message is on its way. We'll be in touch within one business day.</p>
-          <button type="button" onclick="openScorecard()" class="btn-ghost-orange">Take the Free CX Scorecard →</button>
-        </div>
+      <!-- Success state (hidden until submission succeeds) -->
+      <div id="form-success" style="display:none;text-align:center;padding:48px 20px">
+        <div style="font-size:48px;margin-bottom:16px">🎉</div>
+        <div style="font-family:'Raleway',sans-serif;font-weight:900;font-size:24px;color:var(--text);margin-bottom:12px">We look forward to talking with you soon!</div>
+        <p style="font-size:15px;color:var(--text-muted);line-height:1.7;max-width:420px;margin:0 auto 28px">Your message is on its way. We'll be in touch within one business day.</p>
+        <button type="button" onclick="openScorecard()" class="btn-ghost-orange">Take the Free CX Scorecard →</button>
       </div>
 
-      <!-- Form-level error message -->
-      <div data-fs-error style="display:none;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#e74c3c;"></div>
+      <!-- Error banner (shown only on network/server failure) -->
+      <div id="form-error-banner" style="display:none;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#e74c3c;"></div>
 
-      <form id="contact-form">
+      <!-- The form -->
+      <form id="contact-form" novalidate>
         <div class="form-row">
           <div class="form-group">
             <label for="fname">First Name</label>
-            <input type="text" id="fname" name="first_name" placeholder="Alex" required data-fs-field autocomplete="given-name">
-            <span data-fs-error="first_name" style="font-size:11px;color:#e74c3c;margin-top:4px;display:block"></span>
+            <input type="text" id="fname" name="first_name" placeholder="Alex" required autocomplete="given-name">
+            <span class="field-error" id="err-fname"></span>
           </div>
           <div class="form-group">
             <label for="lname">Last Name</label>
-            <input type="text" id="lname" name="last_name" placeholder="Chen" data-fs-field autocomplete="family-name">
-            <span data-fs-error="last_name" style="font-size:11px;color:#e74c3c;margin-top:4px;display:block"></span>
+            <input type="text" id="lname" name="last_name" placeholder="Chen" autocomplete="family-name">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" placeholder="alex@company.com" required data-fs-field autocomplete="email">
-            <span data-fs-error="email" style="font-size:11px;color:#e74c3c;margin-top:4px;display:block"></span>
+            <input type="email" id="email" name="email" placeholder="alex@company.com" required autocomplete="email">
+            <span class="field-error" id="err-email"></span>
           </div>
           <div class="form-group">
             <label for="company">Company</label>
-            <input type="text" id="company" name="company" placeholder="Acme Co." data-fs-field autocomplete="organization">
+            <input type="text" id="company" name="company" placeholder="Acme Co." autocomplete="organization">
           </div>
         </div>
         <div class="form-group">
           <label for="service">I'm interested in…</label>
-          <select id="service" name="service" required data-fs-field>
+          <select id="service" name="service" required>
             <option value="" disabled selected>Select an option</option>
             <option>Customer Experience Audit — $2,499</option>
             <option>Customer Journey Deep Dive — $8,500</option>
             <option>Just a discovery call — no commitment</option>
             <option>Not sure yet, let's talk</option>
           </select>
-          <span data-fs-error="service" style="font-size:11px;color:#e74c3c;margin-top:4px;display:block"></span>
+          <span class="field-error" id="err-service"></span>
         </div>
         <div class="form-group">
           <label for="message">What's the biggest Customer Experience challenge you're facing right now?</label>
-          <textarea id="message" name="message" placeholder="Tell us what's on your mind…" data-fs-field></textarea>
-          <span data-fs-error="message" style="font-size:11px;color:#e74c3c;margin-top:4px;display:block"></span>
+          <textarea id="message" name="message" placeholder="Tell us what's on your mind…"></textarea>
         </div>
         <div class="form-submit">
-          <button type="submit" data-fs-submit-btn class="btn-primary" style="width:100%;justify-content:center;transition:opacity 0.2s,transform 0.15s,box-shadow 0.2s">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            Send Message
+          <button type="submit" id="submit-btn" class="btn-primary" style="width:100%;justify-content:center">
+            <svg id="submit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <span id="submit-label">Send Message</span>
           </button>
         </div>
       </form>
@@ -1578,23 +1576,103 @@ const revObs = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 revEls.forEach(el => revObs.observe(el));
 
-/* ─── FORM (Formspree @formspree/ajax) ─── */
-window.formspree = window.formspree || function() { (formspree.q = formspree.q || []).push(arguments); };
-formspree('initForm', { formElement: '#contact-form', formId: 'xlgakkop' });
+/* ─── CONTACT FORM — direct Formspree fetch ─── */
+(function() {
+  const form      = document.getElementById('contact-form');
+  const btn       = document.getElementById('submit-btn');
+  const btnLabel  = document.getElementById('submit-label');
+  const btnIcon   = document.getElementById('submit-icon');
+  const successEl = document.getElementById('form-success');
+  const errorBanner = document.getElementById('form-error-banner');
 
-/* Watch for Formspree success state → fire confetti once */
-(function watchFormSuccess() {
-  const successEl = document.querySelector('[data-fs-success]');
-  if (!successEl) return;
-  let confettiFired = false;
-  const obs = new MutationObserver(() => {
-    const visible = successEl.style.display !== 'none' && successEl.offsetParent !== null;
-    if (visible && !confettiFired) {
-      confettiFired = true;
-      launchFormConfetti();
+  if (!form) return;
+
+  // Inline field validation helpers
+  function setFieldError(inputEl, errorId, msg) {
+    const span = document.getElementById(errorId);
+    if (!span) return;
+    span.textContent = msg;
+    if (msg) inputEl.classList.add('invalid');
+    else inputEl.classList.remove('invalid');
+  }
+
+  function validateForm() {
+    let valid = true;
+    const fname   = document.getElementById('fname');
+    const email   = document.getElementById('email');
+    const service = document.getElementById('service');
+
+    if (!fname.value.trim()) {
+      setFieldError(fname, 'err-fname', 'First name is required.');
+      valid = false;
+    } else { setFieldError(fname, 'err-fname', ''); }
+
+    const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.value.trim() || !emailRx.test(email.value.trim())) {
+      setFieldError(email, 'err-email', 'A valid email address is required.');
+      valid = false;
+    } else { setFieldError(email, 'err-email', ''); }
+
+    if (!service.value) {
+      setFieldError(service, 'err-service', 'Please select an option.');
+      valid = false;
+    } else { setFieldError(service, 'err-service', ''); }
+
+    return valid;
+  }
+
+  // Clear errors on input
+  ['fname','email','service'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => validateForm());
+  });
+
+  function setLoading(on) {
+    btn.disabled = on;
+    btnLabel.textContent = on ? 'Sending…' : 'Send Message';
+    btnIcon.style.opacity = on ? '0.4' : '1';
+  }
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    errorBanner.style.display = 'none';
+
+    if (!validateForm()) return;
+
+    setLoading(true);
+
+    const data = new FormData(form);
+
+    try {
+      const res = await fetch('https://formspree.io/f/xlgakkop', {
+        method: 'POST',
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      });
+
+      const json = await res.json();
+
+      if (res.ok) {
+        // Hide form, show success, fire confetti
+        form.style.display = 'none';
+        errorBanner.style.display = 'none';
+        successEl.style.display = 'block';
+        launchFormConfetti();
+      } else {
+        // Show Formspree's error message if available
+        const msg = (json.errors && json.errors.length)
+          ? json.errors.map(err => err.message).join(' ')
+          : 'Something went wrong. Please try again or email us directly.';
+        errorBanner.textContent = '⚠ ' + msg;
+        errorBanner.style.display = 'block';
+        setLoading(false);
+      }
+    } catch (err) {
+      errorBanner.textContent = '⚠ Network error — please check your connection and try again.';
+      errorBanner.style.display = 'block';
+      setLoading(false);
     }
   });
-  obs.observe(successEl, { attributes: true, attributeFilter: ['style'] });
 })();
 
 function launchFormConfetti() {
@@ -1845,7 +1923,6 @@ function launchCXConfetti() {
   draw();
 }
 </script>
-<!-- Formspree Ajax SDK — handles submit, field errors, success state, button disable -->
-<script src="https://unpkg.com/@formspree/ajax@1.1.1" defer></script>
+<!-- Formspree submissions handled via direct fetch — no SDK dependency needed -->
 </body>
 </html>
